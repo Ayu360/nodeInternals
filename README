@@ -1,5 +1,4 @@
 #INDEX.JS
-#nothing
 ##LEC: 30
 
 1. Node js contains two most important dependencies: 'V8' engine and 'libuv' library.
