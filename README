@@ -1,0 +1,78 @@
+#INDEX.JS
+
+##LEC: 30
+
+1. Node js contains two most important dependencies: 'V8' engine and 'libuv' library.
+2. V8 engine is responsible for converting our JS code to machine code. If it not had been  
+   V8 engine there was no way that node could understand JS.
+3. libuv library enables us to access the features of underlying operating system and the file system. libuv is also responsible for handeling EVENT LOOPS and THREAD POOL.
+
+###NOTE:
+\*Both V8 and libuv are written in c++ (V8 also has some js libraries ) and hence has libraries in c++ and js but still node enable us to compiled js code into machine code. Hence node gives us a nice abstraction.
+
+You can call node a C++ program.
+NODE run in single thread and therefore it's easy to block (using blocking code).\*
+
+##LEC: 31
+A thread is a sequence of instruction. Thread is a box where our code is executed in computer's processor.
+
+_HOW NODE EXECUTES PROGRAM:_
+
+````1. Node process starts (instance of a program in execution on computer)
+2. Since Node is single threaded process has a single thread (block of memory)
+3. Now program is initialized in the thread.
+4. All the top level code is executed (ones that are not in any callbacks) along with all require modules import.
+5. All the callbacks are registered followed by commencement of Event Loop!```
+
+###NOTE:
+*There are certain tasks that are too expensive (Heavy) to be executed in event loop, since they can block the main thread and hence can cause our server (application) to go down. So Event loop has a THREAD POOL.*
+
+_THREAD POOL:_
+```Event loop contains 4 additional threads which can be used to offload the heavy task (task that take too long time to complete) to these threads. This combination is called Thread POOL. If we want we can have upto 128 threads but usually 4 are enough.
+
+Its not upto the developer that which task will be offloaded to thread pool but completely upto the event pool and abstracted from us.
+E.X., of heavy tasks:
+File system API's, Cryptography (network) and DNS Lookups (matching domain name to IP addresses).```
+
+###NOTE:
+
+*1. event loop is nothing but just a c program in libuv. It's work is to execute the async callbacks.
+
+2. All 4 phases are part of libuv (timer, i/o, check queue, close). but microprocessor queues (nextTick callback, promise callbacks) are not part of libuv. Then whose part are these?
+
+3. microtask queues are executed everytime any callback has completed execution, not just after any phase is completed.
+
+4. Timmer queue is not actually a queue its just a min heap data structure.
+
+5.
+##I/O Polling:
+```When control comes to the I/O queue for the first time, I/O queue is completly empty, even if the readfile has completed it's execution the callbacks are not queued in I/O queue. The control moves to micro-tasks (nextTick & resolve.promise) and executes callBacks in their queues if any.
+
+The control then moves to I/O polling (not one of phase 4 major phases) stage, where it asks the readfile (kernel) if the readfile has completed the execution, if yes then it queues the corresponding callback in the I/O queue. So now controll will move to rest all 3 queues and once all of them are over (in next tick) it will executes callbacks of I/O queue.```
+
+6. If we have a sync code inside of async callBack, the control will even block the execution of nextTick() leave other executions.
+
+We have a slide of EVENT LOOP to be pasted here! followed by summary of Event Loop!*
+
+#EVENT.JS
+##LEC: 34 (Event driven architechture)
+
+1. Node Js is made around Event driven architecture. i.e., there are functions that respond as soon as events are fired off.
+2. Now event is something important that happened during execution in node. i.e., server recieving request, readFile completing file read etc. Now you know what's event driven architecture.
+
+3. In node we have Event emitter (Instances(objects) of Event Emitter class) that emits the event object. Followed by event listener functions that keeps looking for events emitted by event emitter class and executed the corresponding callback.
+
+This whole structure is k/a OBSERVER PATTERN since event listner are always observing for fired events. 4. EXAMPLE:
+Let's say we have a server (instance of http class & eventEmitter class). Which will emit the request event as soon as server is hit by some request and then by using server.on() method this request is listened and corresponding callback is executed.
+
+##LEC:36
+
+1. Used to process (read and write) data piece by piece(chuncks), without completing the whole read and write operation, and therefore without keeping all the data in memory.
+
+Ex: netflix & youtube (since we can start watching before whole video is even loaded).
+Perfect for handelling large volumes of data, for e.x., videos
+More efficient data processing in terms of memory and time (we don't have to wait untill whole load is completed).
+
+res is a writeable stram
+
+````
